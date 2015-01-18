@@ -9,8 +9,20 @@
 
 		<link href="css/styles.css" rel="stylesheet">
 		<script>
+			function makeTableID(id, class_name) {
+				document.write("<td id=" + id + " class=\"" + class_name + "\"></td>");
+			}
+
+			function makeName(prefix, i, j) {
+				return prefix + i + "-" + j;
+			}
+
+			function lineName(i, j, k, l) {
+				return "l" + makeName("d", i, j) + "_" + makeName("d", k, l);
+			}
+
 			var DOT_WIDTH = 10;
-			var DOT_DEPTH = 12;
+			var DOT_DEPTH = 10;
 		</script>
 	</head>
 	<body>
@@ -26,9 +38,25 @@
 						for (var i = 0; i < DOT_DEPTH * 2 - 1; i++) {
 							document.write("<tr>");
 							for (var j = 0; j < DOT_WIDTH * 2 - 1; j++) {
-								document.write(
-									"<td id=b" + i + "-" + j + "></td>"
-								);
+								var game_i = Math.floor(i/2);
+								var game_j = Math.floor(j/2);
+								if (i % 2 == 0) {
+									if (j % 2 == 0) {
+										makeTableID(makeName("d", game_i, game_j), "dot");
+									} else {
+										makeTableID(lineName(
+											game_i, game_j, game_i, game_j + 1
+										), "horiz-line line");
+									}
+								} else {
+									if (j % 2 == 0) {
+										makeTableID(lineName(
+											game_i, game_j, game_i + 1, game_j
+										), "vert-line line");
+									} else {
+										makeTableID(makeName("b", game_i, game_j), "box");
+									}
+								}
 							}
 							document.write("</tr>");
 						}
