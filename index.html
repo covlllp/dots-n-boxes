@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Dots and Boxes</title>
+
+		<link href="css/styles.css" rel="stylesheet">
+		<script>
+			var DOT_WIDTH = 10;
+			var DOT_DEPTH = 12;
+		</script>
+	</head>
+	<body>
+		<div class="site-wrapper">
+			<div class="header-space">
+				<div class="in-header center" id="play-but-div">
+					<a href="#" class="btn" id="play-button">Play Game</a>
+				</div>
+			</div>
+			<div class="mid-wrapper">
+				<table class="game-table">
+					<script>
+						for (var i = 0; i < DOT_DEPTH * 2 - 1; i++) {
+							document.write("<tr>");
+							for (var j = 0; j < DOT_WIDTH * 2 - 1; j++) {
+								document.write(
+									"<td id=b" + i + "-" + j + "></td>"
+								);
+							}
+							document.write("</tr>");
+						}
+					</script>
+				</table>
+			</div>
+		</div>
+
+		<!-- Scripts for things -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script src="js/application.js"></script>
+	</body>
+</html>

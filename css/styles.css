@@ -1,0 +1,37 @@
+body {
+	background-color: #333;
+	color: #fff;
+	text-align: center;
+	font-family: arial;
+}
+
+.header-space {
+	margin: 0 auto;
+	margin-bottom: 30px;
+}
+
+.btn {
+	width: 50px;
+	margin-top: 10px;
+	padding: 10px;
+	border-radius: 5px;
+	background-color: #337ab7;
+	font-size: 15px;
+	color: #fff;
+	text-decoration: none;	
+}
+
+.btn:hover {
+	background-color: #1e496d;
+}
+
+table.game-table {
+	margin: 0 auto;
+	border: 1px solid #fff;
+}
+
+td {
+	border: 1px solid blue;
+	width: 10px;
+	height: 12px;
+}
