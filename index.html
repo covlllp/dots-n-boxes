@@ -33,7 +33,25 @@
 				</div>
 			</div>
 			<div class="mid-wrapper">
-				<table class="game-table">
+				<div class="left player-space" id="user_div">
+					<h1>You</h1>
+					<h2>Score:
+						<span class="player" id="user_score">0</span>
+					</h2>
+					<div id="player-turn" class="turn-ind player-back">
+						Your turn
+					</div>
+				</div>
+				<div class="right player-space" id="comp_div">
+					<h1>Computer</h1>
+					<h2>Score:
+						<span class="comp" id="comp_score">0</span>
+					</h2>
+					<div id="comp-turn" class="turn-ind comp-back">
+						Your turn
+					</div>
+				</div>
+				<table class="game-table center">
 					<script>
 						for (var i = 0; i < DOT_DEPTH * 2 - 1; i++) {
 							document.write("<tr>");
