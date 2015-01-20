@@ -17,7 +17,7 @@
 				return prefix + i + "-" + j;
 			}
 
-			function lineName(i, j, k, l) {
+			function getLineName(i, j, k, l) {
 				return "l" + makeName("d", i, j) + "_" + makeName("d", k, l);
 			}
 
@@ -38,7 +38,7 @@
 					<h2>Score:
 						<span class="player" id="user_score">0</span>
 					</h2>
-					<div id="player-turn" class="turn-ind player-back">
+					<div id="player-turn" class="turn-ind player-back hidden">
 						Your turn
 					</div>
 				</div>
@@ -47,7 +47,7 @@
 					<h2>Score:
 						<span class="comp" id="comp_score">0</span>
 					</h2>
-					<div id="comp-turn" class="turn-ind comp-back">
+					<div id="comp-turn" class="turn-ind comp-back hidden">
 						Your turn
 					</div>
 				</div>
@@ -62,13 +62,13 @@
 									if (j % 2 == 0) {
 										makeTableID(makeName("d", game_i, game_j), "dot");
 									} else {
-										makeTableID(lineName(
+										makeTableID(getLineName(
 											game_i, game_j, game_i, game_j + 1
 										), "horiz-line line");
 									}
 								} else {
 									if (j % 2 == 0) {
-										makeTableID(lineName(
+										makeTableID(getLineName(
 											game_i, game_j, game_i + 1, game_j
 										), "vert-line line");
 									} else {
