@@ -1,21 +1,25 @@
-var game;
+var game = "";
 
 $(document).ready(function() {
-	// $(".box").on("click", function() {
-	// 	$(this).addClass("comp-back");
-	// });
-
-	$(".line").on("click", function() {
-		game.playLine(this);
+	$(window).keypress(function(e) {
+		if (game.whoseTurn() == 'comp') {
+			var test = setInterval(function() {
+				game.playComputerTurn();
+				if (game.whoseTurn() == 'player') {
+					clearInterval(test);
+				}
+			},500);
+		}
 	});
 
-	$(window).keypress(function(e) {
-		$("#b0-0").addClass("player-back");
+	$(".line").on("click", function() {
+		if (game.whoseTurn() == 'player') game.playLine(this);
 	});
 
 	$("#play-button").on("click", function() {
 		game = new Game();
-	})
+		$(this).text("Replay Game");
+	});
 });
 
 function Game() {
@@ -33,6 +37,7 @@ function Game() {
 	$(".line").removeClass("comp-back");
 	$(".box").removeClass("player-back");
 	$(".box").removeClass("comp-back");
+	updateScores();
 
 	// Testing functions
 	this.printSidesLeft = function() {
@@ -46,7 +51,28 @@ function Game() {
 
 
 	// Private functions
-	// function find
+	function moveLinesTo(i, j, arrToMoveTo) {
+		var arr = [];
+		removeLineFrom(i, j, i + 1, j, arr);
+		removeLineFrom(i, j, i, j + 1, arr);
+		removeLineFrom(i, j + 1, i + 1, j + 1, arr);
+		removeLineFrom(i + 1, j, i + 1, j + 1, arr);
+		arrToMoveTo.push.apply(arrToMoveTo, arr);
+	}
+
+	function removeMove(id) {
+		// Returns true if object was removed, false if no object found
+		// QUESTION ABOUT THIS.
+		var a = Game.prototype.removeIdFromArr(goodMoves, id);
+		var b = Game.prototype.removeIdFromArr(badMoves, id);
+		var c = Game.prototype.removeIdFromArr(availableMoves, id);
+		return a || b || c;
+	}
+
+	function removeLineFrom(i, j, k, l, arr) {
+		var lineID = "ld" + i + "-" + j + "_d" + k + "-" + l;
+		if (removeMove(lineID)) arr.push(lineID)
+	}
 
 	function updateScores() {
 		$("#user_score").text(scores.player);
@@ -59,14 +85,7 @@ function Game() {
 			|| availableMoves.indexOf(id) != -1);
 	}
 
-	function removeMove(id) {
-		// QUESTION ABOUT THIS.
-		Game.prototype.removeIdFromArr(goodMoves, id);
-		Game.prototype.removeIdFromArr(badMoves, id);
-		Game.prototype.removeIdFromArr(availableMoves, id);
-	}
-
-	function updateBoxAndMoves(dom, id, i, j) {
+	function updateBoxAndMoves(i, j) {
 		if (i >= 0 && j >= 0 && i < DOT_DEPTH && j < DOT_WIDTH) {
 			if (--blockMap[i][j] == 0) {
 				$("#b" + i + "-" + j).addClass(turn + "-back");
@@ -74,12 +93,9 @@ function Game() {
 				updateScores();
 				return false;
 			} else if (blockMap[i][j] == 1) {
-
-				// console.log("add to good move");
+				moveLinesTo(i, j, goodMoves);
 			} else if (blockMap[i][j] == 2) {
-				// console.log("add moves to bad moves")
-			} else {
-				// console.log("normal move");
+				moveLinesTo(i, j, badMoves);
 			}
 		}
 		return true;
@@ -88,15 +104,15 @@ function Game() {
 	function updateAndReturn(dom, id) {
 		var dash_ind = id.indexOf("-");
 		var under_ind = id.indexOf("_");
-		var i = id.substring(2, dash_ind);
-		var j = id.substring(dash_ind + 1, under_ind);
+		var i = parseInt(id.substring(2, dash_ind));
+		var j = parseInt(id.substring(dash_ind + 1, under_ind));
 		if ($(dom).hasClass("vert-line")) {
-			var a = updateBoxAndMoves(dom, id, i, j);
-			var b = updateBoxAndMoves(dom, id, i, j - 1);
+			var a = updateBoxAndMoves(i, j);
+			var b = updateBoxAndMoves(i, j - 1);
 			return a && b;
 		} else if ($(dom).hasClass("horiz-line")) {
-			var a = updateBoxAndMoves(dom, id, i, j);
-			var b = updateBoxAndMoves(dom, id, i - 1, j);
+			var a = updateBoxAndMoves(i, j);
+			var b = updateBoxAndMoves(i - 1, j);
 			return a && b;
 		}
 	}
@@ -119,12 +135,35 @@ function Game() {
 		turn = (turn == 'player') ? 'comp' : 'player';
 		$("#" + turn + "-turn").toggleClass("hidden");
 	}
+
+	this.whoseTurn = function() {
+		return turn;
+	}
+
+	this.playComputerTurn = function() {
+		this.playFromArr(goodMoves)
+		&& this.playFromArr(availableMoves)
+		&& this.playFromArr(badMoves);
+	}
 }
 
+
+
 // Game public prototype functions
+Game.prototype.playFromArr = function(arr) {
+	var len = arr.length;
+	if (!len) return true;
+	var ind = Math.floor(Math.random() * len);
+	this.playLine($("#" + arr[ind]));
+	return false;
+};
+
 Game.prototype.removeIdFromArr = function(arr, id) {
 	var ind = arr.indexOf(id);
-	if (ind != -1) arr.splice(ind, 1);
+	if (ind != -1) {
+		arr.splice(ind, 1);
+		return true;
+	} else return false;
 };
 
 
