@@ -1,19 +1,29 @@
 var game = "";
 
 $(document).ready(function() {
-	$(window).keypress(function(e) {
+	// $(window).keypress(function(e) {
+	// 	if (game.whoseTurn() == 'comp') {
+	// 		var test = setInterval(function() {
+	// 			game.playComputerTurn();
+	// 			if (game.whoseTurn() == 'player' || game.isGameEnd()) {
+	// 				clearInterval(test);
+	// 			}
+	// 		},500);
+	// 	}
+	// });
+
+	$(".line").on("click", function() {
+		if (game.whoseTurn() == 'player') {
+			game.playLine(this);
+		} else return;
 		if (game.whoseTurn() == 'comp') {
 			var test = setInterval(function() {
 				game.playComputerTurn();
-				if (game.whoseTurn() == 'player') {
+				if (game.whoseTurn() == 'player' || game.isGameEnd()) {
 					clearInterval(test);
 				}
 			},500);
 		}
-	});
-
-	$(".line").on("click", function() {
-		if (game.whoseTurn() == 'player') game.playLine(this);
 	});
 
 	$("#play-button").on("click", function() {
@@ -144,6 +154,10 @@ function Game() {
 		this.playFromArr(goodMoves)
 		&& this.playFromArr(availableMoves)
 		&& this.playFromArr(badMoves);
+	}
+
+	this.isGameEnd = function() {
+		return !(goodMoves.length + badMoves.length + availableMoves.length);
 	}
 }
 
