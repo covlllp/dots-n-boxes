@@ -98,11 +98,11 @@ td {
 }
 
 .dot, .vert-line {
-	width: 2px;
+	width: 3px;
 }
 
 .dot, .horiz-line {
-	height: 2px;
+	height: 3px;
 }
 
 .dot {
