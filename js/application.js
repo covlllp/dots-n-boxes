@@ -22,7 +22,7 @@ $(document).ready(function() {
 				if (game.whoseTurn() == 'player' || game.isGameEnd()) {
 					clearInterval(test);
 				}
-			},500);
+			},400);
 		}
 	});
 
