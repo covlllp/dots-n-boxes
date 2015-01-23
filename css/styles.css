@@ -79,7 +79,9 @@ body {
 	visibility: hidden;
 }
 
-
+#comp-option-div {
+	margin: 20px;
+}
 
 table.game-table {
 	border: 1px solid #666666;

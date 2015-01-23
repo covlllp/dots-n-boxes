@@ -1,44 +1,54 @@
-var game = "";
+var game;
 
 $(document).ready(function() {
-	// $(window).keypress(function(e) {
-	// 	if (game.whoseTurn() == 'comp') {
-	// 		var test = setInterval(function() {
-	// 			game.playComputerTurn();
-	// 			if (game.whoseTurn() == 'player' || game.isGameEnd()) {
-	// 				clearInterval(test);
-	// 			}
-	// 		},500);
-	// 	}
-	// });
+	game = new Game();
+
+	$(window).keypress(function(e) {
+		console.log($("input:radio:checked")[0].value);
+		// if (game.whoseTurn() == 'comp') {
+		// 	var test = setInterval(function() {
+		// 		game.playComputerTurn();
+		// 		if (game.whoseTurn() == 'player' || game.isGameEnd()) {
+		// 			clearInterval(test);
+		// 		}
+		// 	},500);
+		// }
+	});
 
 	$(".line").on("click", function() {
 		if (game.whoseTurn() == 'player') {
 			game.playLine(this);
 		} else return;
 		if (game.whoseTurn() == 'comp') {
-			var test = setInterval(function() {
+			setTimeout(function() {
 				game.playComputerTurn();
-				if (game.whoseTurn() == 'player' || game.isGameEnd()) {
-					clearInterval(test);
-				}
-			},400);
+
+				var test = setInterval(function() {
+					if (game.whoseTurn() == 'comp') game.playComputerTurn();
+					if (game.whoseTurn() == 'player' || game.isGameEnd()) {
+						clearInterval(test);
+					}
+				}, COMP_SPEED);
+			}, 100);
 		}
 	});
 
 	$("#play-button").on("click", function() {
 		game = new Game();
-		$(this).text("Replay Game");
 	});
 });
 
 function Game() {
-	var scores         = {player: 0, comp: 0};
-	var turn           = 'player';		// 'player' or 'comp'
-	var blockMap       = this.init2dArray(4, DOT_DEPTH, DOT_WIDTH); // indicates how many sides of a block have been played
-	var goodMoves      = [];			// keeps track of moves that will close boxes
-	var badMoves       = [];			// keeps track of moves to avoid
-	var availableMoves = this.initAvailMoves();			// keeps track of all other available moves
+	var scores    = {player: 0, comp: 0};
+	var turn      = 'player';				// 'player' or 'comp'
+	var blockMap  = this.init2dArray(4, DOT_DEPTH, DOT_WIDTH);
+											// indicates how many sides of a block have been played
+											//		if 0, player point
+											//		if -1, computer point
+	var goodMoves = [];						// keeps track of moves that will close boxes
+	var badMoves  = [];						// keeps track of moves to avoid
+	var okayMoves = this.initAvailMoves();	// keeps track of all other moves
+	var availMoves= this.initAvailMoves();
 
 	// DOM getting reset
 	$("#player-turn").removeClass("hidden");
@@ -47,6 +57,7 @@ function Game() {
 	$(".line").removeClass("comp-back");
 	$(".box").removeClass("player-back");
 	$(".box").removeClass("comp-back");
+	$("#play-button").text("Replay Game");
 	updateScores();
 
 	// Testing functions
@@ -75,7 +86,7 @@ function Game() {
 		// QUESTION ABOUT THIS.
 		var a = Game.prototype.removeIdFromArr(goodMoves, id);
 		var b = Game.prototype.removeIdFromArr(badMoves, id);
-		var c = Game.prototype.removeIdFromArr(availableMoves, id);
+		var c = Game.prototype.removeIdFromArr(okayMoves, id);
 		return a || b || c;
 	}
 
@@ -90,15 +101,16 @@ function Game() {
 	}
 
 	function isMoveAvailable(id) {
-		return (goodMoves.indexOf(id) 	  != -1
-			|| badMoves.indexOf(id)       != -1
-			|| availableMoves.indexOf(id) != -1);
+		return (goodMoves.indexOf(id)		!= -1
+			|| badMoves.indexOf(id)  		!= -1
+			|| okayMoves.indexOf(id) 		!= -1);
 	}
 
 	function updateBoxAndMoves(i, j) {
 		if (i >= 0 && j >= 0 && i < DOT_DEPTH && j < DOT_WIDTH) {
 			if (--blockMap[i][j] == 0) {
 				$("#b" + i + "-" + j).addClass(turn + "-back");
+				if (turn == 'comp') blockMap[i][j]--;
 				scores[turn]++;
 				updateScores();
 				return false;
@@ -110,6 +122,15 @@ function Game() {
 		}
 		return true;
 	}
+
+	function playFromArr(arr) {
+		var len = arr.length;
+		if (!len) return true;
+		var ind = Math.floor(Math.random() * len);
+		this.playLine($("#" + arr[ind]));
+		availMoves.splice(availMoves.indexOf(arr[ind]), 1);		
+		return false;
+	};
 
 	function updateAndReturn(dom, id) {
 		var dash_ind = id.indexOf("-");
@@ -126,6 +147,24 @@ function Game() {
 			return a && b;
 		}
 	}
+
+	function getBoardUtil () {
+		var score = 0;
+		for (var i = 0; i < blockMap.length; i++) {
+			for (var j = 0; j < blockMap[i].length; j++) {
+				if (blockMap[i][j] == -1) score += 2;
+				else if (blockMap[i][j] == 0) score -= 2;
+				else if (blockMap[i][j] == 1) score += 0.75;
+				else if (blockMap[i][j] == 2) score -= 0.5;
+			};
+		};
+		return score;
+	}
+
+
+
+
+
 
 	// Privileged functions
 	this.playLine = function(dom) {
@@ -151,26 +190,28 @@ function Game() {
 	}
 
 	this.playComputerTurn = function() {
-		this.playFromArr(goodMoves)
-		&& this.playFromArr(availableMoves)
-		&& this.playFromArr(badMoves);
+		if (this.compBrain() == 'greedy') {
+			playFromArr.call(this, goodMoves)
+			&& playFromArr.call(this, okayMoves)
+			&& playFromArr.call(this, badMoves);
+		} else {
+			var headNode = new Node(null, null, availMoves, blockMap, turn);
+			var now = new Date();
+			while (new Date() - now < COMP_SPEED - 100) {
+				var depth = 0;
+			}
+			this.switchTurn();
+		}
 	}
 
 	this.isGameEnd = function() {
-		return !(goodMoves.length + badMoves.length + availableMoves.length);
+		return !(goodMoves.length + badMoves.length + okayMoves.length);
 	}
 }
 
 
 
 // Game public prototype functions
-Game.prototype.playFromArr = function(arr) {
-	var len = arr.length;
-	if (!len) return true;
-	var ind = Math.floor(Math.random() * len);
-	this.playLine($("#" + arr[ind]));
-	return false;
-};
 
 Game.prototype.removeIdFromArr = function(arr, id) {
 	var ind = arr.indexOf(id);
@@ -206,3 +247,28 @@ Game.prototype.init2dArray = function(init, m, n) {
 	}
 	return arr;
 };
+
+Game.prototype.compBrain = function() {
+	return $("input:radio:checked")[0].value.toLowerCase();
+};
+
+Game.prototype.bubbleDown = function(node, count) {
+	if (count >= MCTS_DEPTH) return node; // return node!
+	var pickInd = Math.floor(Math.random() * node.availMoves.length);
+	var pick = node.availMoves[pickInd];
+
+	if (node.hasOwnProperty[pick]) return bubbleDown(node[pick], ++count); // bubble down
+
+	var boardState = node.boardState.slice();
+	var availMoves = node.availMoves.slice();
+};
+
+function Node(move, parent, children, boardState, turn) {
+	this.move = move;
+	this.parent = parent;
+	this.availMoves = children;
+	this.boardState = boardState;
+	this.utilVal = 0;
+	this.num_visit = 0;
+	this.turn = turn;
+}

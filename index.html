@@ -21,8 +21,10 @@
 				return "l" + makeName("d", i, j) + "_" + makeName("d", k, l);
 			}
 
-			var DOT_WIDTH = 8;
-			var DOT_DEPTH = 8;
+			var DOT_WIDTH = 4;
+			var DOT_DEPTH = 4;
+			var COMP_SPEED = 400;
+			var MCTS_DEPTH = 6;
 		</script>
 	</head>
 	<body>
@@ -49,6 +51,12 @@
 					</h2>
 					<div id="comp-turn" class="turn-ind comp-back hidden">
 						Your turn
+					</div>
+					<div id="comp-option-div">
+						<form id="comp-brain">
+							<input type="radio" name="brain" value="MCTS">MCTS<br>
+							<input type="radio" name="brain" value="greedy" checked>Greedy
+						</form>
 					</div>
 				</div>
 				<table class="game-table center">
