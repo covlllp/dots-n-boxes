@@ -66,22 +66,6 @@ function Game() {
 
 	// Private functions
 
-	// old
-	// function moveLinesTo(i, j, arrToMoveTo) {
-	// 	var arr = [];
-	// 	removeLineFrom(i, j, i + 1, j, arr);
-	// 	removeLineFrom(i, j, i, j + 1, arr);
-	// 	removeLineFrom(i, j + 1, i + 1, j + 1, arr);
-	// 	removeLineFrom(i + 1, j, i + 1, j + 1, arr);
-	// 	arrToMoveTo.push.apply(arrToMoveTo, arr);
-	// }
-
-	// old
-	// function removeLineFrom(i, j, k, l, arr) {
-	// 	var lineID = "ld" + i + "-" + j + "_d" + k + "-" + l;
-	// 	if (removeMove(lineID)) arr.push(lineID)
-	// }
-
 	function updateScores() {
 		$("#user_score").text(scores.player);
 		$("#comp_score").text(scores.comp);
@@ -90,34 +74,6 @@ function Game() {
 	function isMoveAvailable(id) {
 		return availMoves.indexOf(id) != -1;
 	}
-
-	// old
-	// function updateBoxAndMoves(i, j) {
-	// 	if (i >= 0 && j >= 0 && i < DOT_DEPTH && j < DOT_WIDTH) {
-	// 		if (--blockMap[i][j] == 0) {
-	// 			$("#b" + i + "-" + j).addClass(turn + "-back");
-	// 			if (turn == 'comp') blockMap[i][j]--;
-	// 			scores[turn]++;
-	// 			updateScores();
-	// 			return false;
-	// 		} else if (blockMap[i][j] == 1) {
-	// 			moveLinesTo(i, j, goodMoves);
-	// 		} else if (blockMap[i][j] == 2) {
-	// 			moveLinesTo(i, j, badMoves);
-	// 		}
-	// 	}
-	// 	return true;
-	// }
-
-	// old
-	// function playFromArr(arr) {
-	// 	var len = arr.length;
-	// 	if (!len) return true;
-	// 	var ind = Math.floor(Math.random() * len);
-	// 	this.playLine($("#" + arr[ind]));
-	// 	availMoves.splice(availMoves.indexOf(arr[ind]), 1);
-	// 	return false;
-	// };
 
 	function attemptMoveWithSides (sides) {
 		var coord = getBoardCoord(sides);
@@ -206,6 +162,7 @@ function Game() {
 
 	this.playComputerTurn = function() {
 		if (this.compBrain() == 'greedy') {
+			// run greedy algorithm
 			attemptMoveWithSides.call(this, [1])
 			&& attemptMoveWithSides.call(this, [3, 4])
 			&& attemptMoveWithSides.call(this, [2]);
@@ -213,20 +170,20 @@ function Game() {
 			// && playFromArr.call(this, okayMoves)
 			// && playFromArr.call(this, badMoves);
 		} else {
+			// run monte carlo test search algorithm
 			var now = new Date();
 			var count = 0;
 			while (new Date() - now < COMP_SPEED) {
-			// while (new Date() - now < 20) {
-				var leafNode = this.bubbleDown(curNode, 0);
+			// while (count < 10) {
+					var leafNode = this.bubbleDown(curNode, 0);
 				var utilVal = this.getBoardUtil(leafNode.boardState, leafNode.turn);
-				var merge = [];
 				this.bubbleUp(leafNode, curNode, utilVal);
 				count++;
 			}
 			console.log('count:', count);
 			var pick = this.selectPick(curNode);
-			var m = [];
-			console.log(m.concat.apply(m,curNode[pick].boardState));
+			console.log('curnode is ', curNode);
+			console.log('pick is', pick);
 			this.playLine(pick);
 		}
 	}
@@ -320,7 +277,7 @@ Game.prototype.bubbleDown = function(node, count) {
 	var pickInd = Math.floor(Math.random() * node.availMoves.length);
 	var pick = node.availMoves[pickInd];
 
-	if (node.hasOwnProperty[pick]) return this.bubbleDown(node[pick], ++count); // bubble down
+	if (node.hasOwnProperty(pick)) return this.bubbleDown(node[pick], ++count); // bubble down
 
 	var newBoard = MultiDepArrayClone(node.boardState);
 	var availMoves = node.availMoves.slice();
@@ -339,7 +296,8 @@ Game.prototype.bubbleDown = function(node, count) {
 
 Game.prototype.bubbleUp = function(node, curNode, utilVal) {
 	if (node == curNode) return;
-	node.utilVal = (node.utilVal * node.num_visit + utilVal) / (++node.num_visit);
+	node.utilVal = (node.utilVal * node.num_visit + utilVal) / (node.num_visit + 1);
+	node.num_visit++;
 	this.bubbleUp(node.parent, curNode, node.utilVal);
 };
 
@@ -362,20 +320,15 @@ Game.prototype.selectPick = function(node) {
 
 Game.prototype.getBoardUtil = function(board, turn) {
 	var score = 0;
-	var mult = (turn == 'comp') ? -1 : 1;
+	var mult = (turn == 'comp') ? 1 : -1;
 	for (var i = 0; i < board.length; i++) {
 		for (var j = 0; j < board[i].length; j++) {
-			if (board[i][j] == -1) score += 2;
-			else if (board[i][j] == 0) score -= 2;
-			else if (board[i][j] == 1) score += 0.75 * mult;
+			if (board[i][j] == -1) score += 3;
+			else if (board[i][j] == 0) score -= 3;
+			else if (board[i][j] == 1) score += 3 * mult;
 			else if (board[i][j] == 2) score -= 0.5 * mult;
 		};
 	};
-	// var flatBoard = [].concat.apply([], arr);
-	// score += 2 * mult * flatBoard.filter(function(val) {return val == -1}).length;
-	// score -= 2 * mult * flatBoard.filter(function(val) {return val == 0}).length;
-	// score += 0.75 * mult * flatBoard.filter(function(val) {return val == 1}).length;
-	// score += 0.5 * mult * flatBoard.filter(function(val) {return val == 2}).length;
 	return score;
 };
 
