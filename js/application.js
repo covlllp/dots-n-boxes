@@ -1,4 +1,3 @@
-var Game = require('game');
 var game;
 
 $(document).ready(function() {
@@ -8,7 +7,7 @@ $(document).ready(function() {
 	});
 
 	$(".line").on("click", function() {
-		if (game.whoseTurn() == 'player') {
+		if (game.whoseTurn() == 'player' || true) {
 			game.playLine($(this).attr('id'));
 		} else return;
 		// if (game.whoseTurn() == 'comp') {
@@ -45,26 +44,41 @@ function Game () {
 	$(".line, .box").removeClass("player-back");
 	$(".line, .box").removeClass("comp-back");
 	$("#play-button").text("Restart Game");
-	updateScores();
+	this.updateScores();
 }
 
 
 // Board functions
 
 Game.prototype.playLine = function(lineId) {
+	$('#' + lineId).addClass(this.turn + '-back');
 	// Should return # of boxes completed.
+	// this.actOnLine(lineId, function(i, j) {
+
+	// });
 };
 
 
 Game.prototype.actOnLine = function(lineId, func) {
 	// Takes function and runs on blocks
+	// Function takes block i and j
+	function checkAndRun (i, j) {
+		if (this.checkBoxBounds(i, j))
+			func(i, j);	
+	}
+
 	var lineInds = this.parseLineInd(lineId);
-	
+	var i = lineInds[0];
+	var j = lineInds[1];
+	var k = lineInds[2];
+	checkAndRun(i, j);
+	if (i == k) checkAndRun(i - 1, j);
+	else checkAndRun(i, j - 1);
 };
 
 Game.prototype.checkBoxBounds = function(i, j) {
-	return (x >= 0 && y >= 0
-		&& x < DOT_WIDTH - 1 && y < DOT_DEPTH - 1)
+	return (j >= 0 && i >= 0
+		&& j < DOT_WIDTH - 1 && i < DOT_DEPTH - 1)
 };
 
 Game.prototype.parseLineInd = function(lineId) {
@@ -81,6 +95,10 @@ Game.prototype.parseLineInd = function(lineId) {
 
 // Gameplay functions
 
+Game.prototype.whoseTurn = function() {
+	return this.turn;
+};
+
 Game.prototype.isMoveAvailable = function(lineId) {
 	return this.availMoves.indexOf(lineId) != -1;
 };
@@ -95,9 +113,9 @@ Game.prototype.updateScores = function() {
 };
 
 Game.prototype.switchTurn = function() {
-	($"#" + this.turn + "-turn").toggleClass("hidden");
+	$("#" + this.turn + "-turn").toggleClass("hidden");
 	this.turn = (this.turn == player) ? 'comp' : 'player';
-	($"#" + this.turn + "-turn").toggleClass("hidden");
+	$("#" + this.turn + "-turn").toggleClass("hidden");
 };
 
 
