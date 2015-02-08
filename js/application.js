@@ -1,8 +1,7 @@
+var Game = require('game');
 var game;
 
 $(document).ready(function() {
-	game = new Game();
-
 	$(window).keypress(function(e) {
 		// game.playComputerTurn();
 		// console.log($("input:radio:checked")[0].value);
@@ -15,14 +14,14 @@ $(document).ready(function() {
 		// if (game.whoseTurn() == 'comp') {
 		// 	var test = setInterval(function() {
 		// 		game.playComputerTurn();
-		// 		if (game.whoseTurn() == 'player' || game.isGameEnd()) {
+		// 		if (game.whoseTurn() == 'player' || game.isOld_GameEnd()) {
 		// 			clearInterval(test);
 		// 		}
 		// 	},500);
 		// }
 
 
-		while (game.whoseTurn() == 'comp' && !game.isGameEnd()) {
+		while (game.whoseTurn() == 'comp' && !game.isOld_GameEnd()) {
 			game.playComputerTurn();
 		}
 	});
@@ -32,7 +31,109 @@ $(document).ready(function() {
 	});
 });
 
-function Game() {
+
+
+function Game () {
+	this.scores = {player: 0, comp: 0};
+	this.turn = 'player';
+	this.board = this.init2dArray(4, DOT_DEPTH - 1, DOT_WIDTH - 1);
+	this.availMoves = this.initAvailMoves();
+
+	// Reset the DOM
+	$("#player-turn").removeClass("hidden");
+	$("#comp-turn").addClass("hidden");
+	$(".line, .box").removeClass("player-back");
+	$(".line, .box").removeClass("comp-back");
+	$("#play-button").text("Restart Game");
+	updateScores();
+}
+
+
+// Board functions
+
+Game.prototype.playLine = function(lineId) {
+	// Should return # of boxes completed.
+};
+
+
+Game.prototype.actOnLine = function(lineId, func) {
+	// Takes function and runs on blocks
+	var lineInds = this.parseLineInd(lineId);
+	
+};
+
+Game.prototype.checkBoxBounds = function(i, j) {
+	return (x >= 0 && y >= 0
+		&& x < DOT_WIDTH - 1 && y < DOT_DEPTH - 1)
+};
+
+Game.prototype.parseLineInd = function(lineId) {
+	var arr = [];
+	var dash_ind = lineId.indexOf('-');
+	var under_ind = lineId.indexOf('_');
+	var other_dash_ind = lineId.indexOf('-', under_ind);
+	arr.push(lineId.substring(2, dash_ind) * 1);
+	arr.push(lineId.substring(dash_ind + 1, under_ind) * 1);
+	arr.push(lineId.substring(under_ind + 2, other_dash_ind) * 1);
+	arr.push(lineId.substring(other_dash_ind + 1, lineId.length) * 1);
+	return arr;
+};
+
+// Gameplay functions
+
+Game.prototype.isMoveAvailable = function(lineId) {
+	return this.availMoves.indexOf(lineId) != -1;
+};
+
+Game.prototype.isGameOver = function() {
+	return this.availMoves.length == 0;
+};
+
+Game.prototype.updateScores = function() {
+	$("#user_score").text(this.scores.player);
+	$("#comp_score").text(this.scores.comp);
+};
+
+Game.prototype.switchTurn = function() {
+	($"#" + this.turn + "-turn").toggleClass("hidden");
+	this.turn = (this.turn == player) ? 'comp' : 'player';
+	($"#" + this.turn + "-turn").toggleClass("hidden");
+};
+
+
+
+
+// Initation functions
+Game.prototype.init2dArray = function(initVal, m, n) {
+	var arr = [];
+	for (var i = 0; i < m; i++) {
+		arr[i] = [];
+		for (var j = 0; j < n; j++) {
+			arr[i][j] = initVal;
+		};
+	};
+	return arr;
+};
+
+Game.prototype.initAvailMoves = function() {
+	var arr = [];
+	for (var i = 0; i < DOT_DEPTH; i++) {
+		for (var j = 0; j < DOT_WIDTH; j++) {
+			if (i < DOT_DEPTH - 1)
+				arr.push(getLineName(i, j, i + 1, j));
+			if (j < DOT_WIDTH - 1)
+				arr.push(getLineName(i, j, i, j + 1));
+		}
+	}
+	return arr;
+};
+
+
+
+
+
+
+function Old_Game() {
 	var scores    = {player: 0, comp: 0};
 	var turn      = 'player';				// 'player' or 'comp'
 	var blockMap  = this.init2dArray(4, DOT_DEPTH - 1, DOT_WIDTH - 1);
@@ -50,7 +151,7 @@ function Game() {
 	$(".line").removeClass("comp-back");
 	$(".box").removeClass("player-back");
 	$(".box").removeClass("comp-back");
-	$("#play-button").text("Replay Game");
+	$("#play-button").text("Replay Old_Game");
 	updateScores();
 
 	// Testing functions
@@ -84,26 +185,10 @@ function Game() {
 	}
 
 	function getBoardCoord (sides) {
-		// function checkNeighborBlocks (i, j, sides) {
-		// 	var min = sides.min();
-		// 	console.log(sides);
-		// 	console.log(min);
-		// 	function checkBlock(x, y) {
-		// 		if (x >= 0 && y >= 0
-		// 			&& x < blockMap.length && y < blockMap[x].length)
-		// 			return blockMap[x][y] >= min;
-		// 		else return true;
-		// 	}
-
-		// 	return checkBlock(i, j-1) && checkBlock(i, j+1)
-		// 	&& checkBlock(i-1, j) && checkBlock(i+1, j);
-		// }
-
 		var foundCoords = [];
 		for (var i = 0; i < blockMap.length; i++) {
 			for (var j = 0; j < blockMap[i].length; j++) {
-				if (sides.indexOf(blockMap[i][j]) != -1
-					&& checkNeighborBlocks(i, j, sides))
+				if (sides.indexOf(blockMap[i][j]) != -1)
 					foundCoords.push({i: i, j: j});
 			};
 		};
@@ -116,8 +201,18 @@ function Game() {
 		function addAvailLine(arr, i, j, k, l) {
 			var lineId = getLineName(i, j, k, l);
 			if (availMoves.indexOf(lineId) != -1) {
-				arr.push(lineId);
+				if (checkBlock(i,j) && ((i==k && checkBlock(i, j-1))
+								 || (j==l && checkBlock(i-1, j)))) {
+					arr.push(lineId);
+				}
 			}
+		}
+
+		function checkBlock (x, y) {
+			// return true if either out of bounds or side is larger than min
+			var bounds = Old_Game.prototype.checkBoxBounds(x, y);
+			if (bounds) return blockMap[x][y] >= sides.min();
+			else return true;
 		}
 
 		var availSideIDs = [];
@@ -166,9 +261,6 @@ function Game() {
 			attemptMoveWithSides.call(this, [1])
 			&& attemptMoveWithSides.call(this, [3, 4])
 			&& attemptMoveWithSides.call(this, [2]);
-			// playFromArr.call(this, goodMoves)
-			// && playFromArr.call(this, okayMoves)
-			// && playFromArr.call(this, badMoves);
 		} else {
 			// run monte carlo test search algorithm
 			var now = new Date();
@@ -188,16 +280,20 @@ function Game() {
 		}
 	}
 
-	this.isGameEnd = function() {
+	this.isOld_GameEnd = function() {
 		return !(availMoves.length);
 	}
 }
 
 
 
-// Game public prototype functions
+// Old_Game public prototype functions
+Old_Game.prototype.checkBoxBounds = function(x, y) {
+	return (x >= 0 && y >= 0
+		&& x < DOT_WIDTH - 1 && y < DOT_DEPTH - 1)
+};
 
-Game.prototype.updateMapAndReturn = function(id, map, turn, state) {
+Old_Game.prototype.updateMapAndReturn = function(id, map, turn, state) {
 	// returns false if box is completed, true if not.
 	// alters boolMap in place.
 	var dash_ind = id.indexOf("-");
@@ -211,7 +307,7 @@ Game.prototype.updateMapAndReturn = function(id, map, turn, state) {
 	return this.updateMapOffIndices(map, turn, i, j, k, state);
 };
 
-Game.prototype.updateMapOffIndices = function(map, turn, i, j, k, state) {
+Old_Game.prototype.updateMapOffIndices = function(map, turn, i, j, k, state) {
 	var a, b;
 	a = this.updateBox(map, turn, i, j, state);
 	if (i == k) {	// line is horizontal
@@ -222,7 +318,7 @@ Game.prototype.updateMapOffIndices = function(map, turn, i, j, k, state) {
 	return a + b;
 };
 
-Game.prototype.updateBox = function(map, turn, i, j, state) {
+Old_Game.prototype.updateBox = function(map, turn, i, j, state) {
 	if (i >= 0 && j >= 0 && i < map.length && j < map[i].length) {
 		if (--map[i][j] == 0) {
 			if (state == 'real') $("#b" + i + "-" + j).addClass(turn + "-back");
@@ -233,7 +329,7 @@ Game.prototype.updateBox = function(map, turn, i, j, state) {
 	return 0;
 };
 
-Game.prototype.removeIdFromArr = function(arr, id) {
+Old_Game.prototype.removeIdFromArr = function(arr, id) {
 	var ind = arr.indexOf(id);
 	if (ind != -1) {
 		arr.splice(ind, 1);
@@ -242,7 +338,7 @@ Game.prototype.removeIdFromArr = function(arr, id) {
 };
 
 
-Game.prototype.initAvailMoves = function() {
+Old_Game.prototype.initAvailMoves = function() {
 	var arr = [];
 	for (var i = 0; i < DOT_DEPTH; i++) {
 		for (var j = 0; j < DOT_WIDTH; j++) {
@@ -255,7 +351,7 @@ Game.prototype.initAvailMoves = function() {
 	return arr;
 };
 
-Game.prototype.init2dArray = function(init, m, n) {
+Old_Game.prototype.init2dArray = function(init, m, n) {
 	var arr = [];
 	for (var i = 0; i < m; i++) {
 		arr[i] = [];
@@ -266,11 +362,11 @@ Game.prototype.init2dArray = function(init, m, n) {
 	return arr;
 };
 
-Game.prototype.compBrain = function() {
+Old_Game.prototype.compBrain = function() {
 	return $("input:radio:checked")[0].value.toLowerCase();
 };
 
-Game.prototype.bubbleDown = function(node, count) {
+Old_Game.prototype.bubbleDown = function(node, count) {
 	if (count >= MCTS_DEPTH) return node; // return node!
 	else if (node.availMoves.length == 0) return node;
 
@@ -294,14 +390,14 @@ Game.prototype.bubbleDown = function(node, count) {
 	return this.bubbleDown(newNode, ++count);
 };
 
-Game.prototype.bubbleUp = function(node, curNode, utilVal) {
+Old_Game.prototype.bubbleUp = function(node, curNode, utilVal) {
 	if (node == curNode) return;
 	node.utilVal = (node.utilVal * node.num_visit + utilVal) / (node.num_visit + 1);
 	node.num_visit++;
 	this.bubbleUp(node.parent, curNode, node.utilVal);
 };
 
-Game.prototype.selectPick = function(node) {
+Old_Game.prototype.selectPick = function(node) {
 	var pick;
 	var pick_val = -Infinity;
 	for (var i = 0; i < node.availMoves.length; i++) {
@@ -318,7 +414,7 @@ Game.prototype.selectPick = function(node) {
 };
 
 
-Game.prototype.getBoardUtil = function(board, turn) {
+Old_Game.prototype.getBoardUtil = function(board, turn) {
 	var score = 0;
 	var mult = (turn == 'comp') ? 1 : -1;
 	for (var i = 0; i < board.length; i++) {
