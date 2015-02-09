@@ -7,17 +7,17 @@ $(document).ready(function() {
 	});
 
 	$(".line").on("click", function() {
-		if (game.whoseTurn() == 'player' || true) {
+		if (game.whoseTurn() == 'player') {
 			game.playLine($(this).attr('id'));
 		} else return;
-		// if (game.whoseTurn() == 'comp') {
-		// 	var test = setInterval(function() {
-		// 		game.playComputerTurn();
-		// 		if (game.whoseTurn() == 'player' || game.isOld_GameEnd()) {
-		// 			clearInterval(test);
-		// 		}
-		// 	},500);
-		// }
+		if (game.whoseTurn() == 'comp') {
+			var test = setInterval(function() {
+				game.playComputerTurn();
+				if (game.whoseTurn() == 'player' || game.isGameOver()) {
+					clearInterval(test);
+				}
+			},200);
+		}
 
 
 		// while (game.whoseTurn() == 'comp' && !game.isOld_GameEnd()) {
@@ -48,6 +48,26 @@ function Game () {
 	// this.printSidesLeft();
 }
 
+// Computer functions
+Game.prototype.playComputerTurn = function() {
+	var compBrain = this.getCompBrain();
+	if (compBrain == 'random') {
+		this.playRandom();
+	}
+};
+
+Game.prototype.playRandom = function() {
+	this.playLine(
+		this.availMoves[
+			Math.floor(Math.random() * this.availMoves.length)
+		]
+	);
+};
+
+Game.prototype.getCompBrain = function() {
+	return $("input:radio:checked")[0].value.toLowerCase();
+};
+
 
 // Board functions
 
@@ -68,6 +88,8 @@ Game.prototype.playLine = function(lineId) {
 		}
 	});
 	if (!count) this.switchTurn();
+	this.availMoves.splice(this.availMoves.indexOf(lineId), 1);
+	console.log(this.availMoves.length);
 };
 
 
