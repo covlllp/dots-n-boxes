@@ -23,7 +23,7 @@
 
 			var DOT_WIDTH = 5;
 			var DOT_DEPTH = 5;
-			var COMP_SPEED = 1500;
+			var COMP_SPEED = 200;
 			var MCTS_DEPTH = 6;
 		</script>
 	</head>
@@ -43,6 +43,14 @@
 					<div id="player-turn" class="turn-ind player-back hidden">
 						Your turn
 					</div>
+					<div id="player-option-div">
+						<form id="player-brain">
+							<input type="radio" name="brain" value="player" checked>Human<br>
+							<input type="radio" name="brain" value="random">Random<br>
+							<input type="radio" name="brain" value="MCTS">MCTS<br>
+							<input type="radio" name="brain" value="greedy">Greedy
+						</form>
+					</div>					
 				</div>
 				<div class="right player-space" id="comp_div">
 					<h1>Computer</h1>

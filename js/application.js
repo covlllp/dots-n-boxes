@@ -2,35 +2,22 @@ var game;
 
 $(document).ready(function() {
 	$(window).keypress(function(e) {
-		// game.playComputerTurn();
-		// console.log($("input:radio:checked")[0].value);
+		console.log(game.getBrain('comp'));
+		console.log(game.getBrain('player'));
 	});
 
 	$(".line").on("click", function() {
-		if (game.whoseTurn() == 'player') {
-			game.playLine($(this).attr('id'));
-		} else return;
-		if (game.whoseTurn() == 'comp') {
-			var test = setInterval(function() {
-				game.playComputerTurn();
-				if (game.whoseTurn() == 'player' || game.isGameOver()) {
-					clearInterval(test);
-				}
-			},200);
+		if (game.getCurrentBrain() != 'player') {
+			return;
 		}
-
-
-		// while (game.whoseTurn() == 'comp' && !game.isOld_GameEnd()) {
-		// 	game.playComputerTurn();
-		// }
+		game.playLine($(this).attr('id'));
+		game.continueComputerTurns();
 	});
 
 	$("#play-button").on("click", function() {
 		game = new Game();
 	});
 });
-
-
 
 function Game () {
 	this.scores = {player: 0, comp: 0};
@@ -46,15 +33,41 @@ function Game () {
 	$("#play-button").text("Restart Game");
 	this.updateScores();
 	// this.printSidesLeft();
+
+	// Play computer turn if needed
+	this.continueComputerTurns();
 }
 
 // Computer functions
-Game.prototype.playComputerTurn = function() {
-	var compBrain = this.getCompBrain();
-	if (compBrain == 'random') {
-		this.playRandom();
+
+Game.prototype.continueComputerTurns = function() {
+	if (this.getCurrentBrain() != 'player' && !this.isGameOver()) {
+		var self = this;
+		var playTurn = setInterval(function() {
+			self.playComputerTurn();
+			if (self.getCurrentBrain() == 'player' || self.isGameOver()) {
+				clearInterval(playTurn);
+			}
+		}, COMP_SPEED);
 	}
 };
+
+Game.prototype.playComputerTurn = function() {
+	var compBrain = this.getBrain('comp');
+	if (compBrain == 'random') {
+		this.playRandom();
+	} else if (compBrain == 'greedy') {
+		this.playGreedy();
+	}
+};
+
+Game.prototype.playGreedy = function() {
+	this.playMoveWithNumSides(1) &&
+	this.playMoveWithNumSides(3, 4) &&
+	this.playMoveWithNumSides(2);
+	this.switchTurn();
+};
+
 
 Game.prototype.playRandom = function() {
 	this.playLine(
@@ -64,8 +77,12 @@ Game.prototype.playRandom = function() {
 	);
 };
 
-Game.prototype.getCompBrain = function() {
-	return $("input:radio:checked")[0].value.toLowerCase();
+Game.prototype.getCurrentBrain = function() {
+	return this.getBrain(this.whoseTurn());
+};
+
+Game.prototype.getBrain = function(who) {
+	return $('#' + who + '-brain > input:radio:checked')[0].value.toLowerCase();
 };
 
 
@@ -75,7 +92,6 @@ Game.prototype.playLine = function(lineId) {
 	this.drawLine(lineId);
 	var self = this;
 	var count = 0;
-	// Should return # of boxes completed.
 	this.actOnLine(lineId, function(i, j) {
 		if (!--self.board[i][j]) {
 			self.drawBox(i, j);
@@ -89,7 +105,6 @@ Game.prototype.playLine = function(lineId) {
 	});
 	if (!count) this.switchTurn();
 	this.availMoves.splice(this.availMoves.indexOf(lineId), 1);
-	console.log(this.availMoves.length);
 };
 
 
@@ -107,8 +122,8 @@ Game.prototype.actOnLine = function(lineId, func) {
 	var j = lineInds[1];
 	var k = lineInds[2];
 	checkAndRun(i, j);
-	if (i == k) checkAndRun(i - 1, j);
-	else checkAndRun(i, j - 1);
+	if (i == k) checkAndRun(i - 1, j);	// horizontal line
+	else checkAndRun(i, j - 1);			// vertical line
 };
 
 Game.prototype.checkBoxBounds = function(i, j) {
@@ -129,6 +144,32 @@ Game.prototype.parseLineInd = function(lineId) {
 };
 
 
+Game.prototype.playMoveWithNumSides = function() { // args can be multiple sides
+	// returns true if move played, false otherwise
+	var sides = [].slice.call(arguments);
+	var blocks = this.getAvailBlocksWithNumSides(sides);
+
+};
+
+Game.prototype.getAvailBlocksWithNumSides = function(side_arr) {
+	var self = this;
+	return this.LoopBoardAndReturn(function(i, j) {
+		return side_arr.indexOf(self.board[i][j]) != -1;
+	});
+};
+
+Game.prototype.availLinesFromBlock = function(i, j) {
+	var arr = [];
+
+	function addAvailLine (i, j, k, l) {
+		var lineId = getLineName(i, j, k, l);
+		if (availMoves.indexOf(lineId) != -1) {
+			
+		}
+	}
+};
+
+
 // Drawing functions
 
 Game.prototype.drawLine = function(lineId) {
@@ -138,6 +179,7 @@ Game.prototype.drawLine = function(lineId) {
 Game.prototype.drawBox = function(i, j) {
 	$('#b' + i + '-' + j).addClass(this.turn + '-back');
 };
+
 
 // Gameplay functions
 
@@ -165,6 +207,18 @@ Game.prototype.switchTurn = function() {
 };
 
 
+// Board iteration functions
+Game.prototype.LoopBoardAndReturn = function(func) {
+	var arr = [];
+	for (var i = 0; i < this.board.length; i++) {
+		for (var j = 0; j < this.board[i].length; j++) {
+			if (func(i, j)) {
+				arr.push({i: i, j: j});
+			}
+		}
+	}
+	return arr;
+};
 
 
 // Initation functions

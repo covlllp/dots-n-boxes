@@ -79,7 +79,7 @@ body {
 	visibility: hidden;
 }
 
-#comp-option-div {
+#comp-option-div, #player-option-div {
 	margin: 20px;
 }
 
