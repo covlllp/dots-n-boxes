@@ -1,10 +1,7 @@
 var game;
 
 $(document).ready(function() {
-	$(window).keypress(function(e) {
-		console.log(game.getBrain('comp'));
-		console.log(game.getBrain('player'));
-	});
+	$(window).keypress(function(e) {});
 
 	$(".line").on("click", function() {
 		if (game.getCurrentBrain() != 'player') {
@@ -53,7 +50,7 @@ Game.prototype.continueComputerTurns = function() {
 };
 
 Game.prototype.playComputerTurn = function() {
-	var compBrain = this.getBrain('comp');
+	var compBrain = this.getCurrentBrain();
 	if (compBrain == 'random') {
 		this.playRandom();
 	} else if (compBrain == 'greedy') {
@@ -65,7 +62,6 @@ Game.prototype.playGreedy = function() {
 	this.playMoveWithNumSides(1) &&
 	this.playMoveWithNumSides(3, 4) &&
 	this.playMoveWithNumSides(2);
-	this.switchTurn();
 };
 
 
@@ -105,6 +101,7 @@ Game.prototype.playLine = function(lineId) {
 	});
 	if (!count) this.switchTurn();
 	this.availMoves.splice(this.availMoves.indexOf(lineId), 1);
+	// this.printSidesLeft();
 };
 
 
@@ -145,10 +142,18 @@ Game.prototype.parseLineInd = function(lineId) {
 
 
 Game.prototype.playMoveWithNumSides = function() { // args can be multiple sides
-	// returns true if move played, false otherwise
+	// returns false if move played, true otherwise
 	var sides = [].slice.call(arguments);
 	var blocks = this.getAvailBlocksWithNumSides(sides);
-
+	while (blocks.length) {
+		var block = blocks.splice(Math.floor(Math.random() * blocks.length), 1);
+		var lines = this.availLinesFromBlockWithSides(sides, block[0].i, block[0].j);
+		if (lines.length) {
+			this.playLine(lines[Math.floor(Math.random() * lines.length)]);
+			return false;
+		}
+	}
+	return true;
 };
 
 Game.prototype.getAvailBlocksWithNumSides = function(side_arr) {
@@ -158,15 +163,30 @@ Game.prototype.getAvailBlocksWithNumSides = function(side_arr) {
 	});
 };
 
-Game.prototype.availLinesFromBlock = function(i, j) {
+Game.prototype.availLinesFromBlockWithSides = function(sides, i, j) {
 	var arr = [];
+	var self = this;
 
 	function addAvailLine (i, j, k, l) {
 		var lineId = getLineName(i, j, k, l);
-		if (availMoves.indexOf(lineId) != -1) {
-			
+		if (self.availMoves.indexOf(lineId) != -1) {
+			if (checkBlock(i, j) && 
+				((i==k) ? checkBlock(i-1, j) : checkBlock(i, j-1))) {
+				arr.push(lineId);
+			}
 		}
 	}
+
+	function checkBlock (i, j) {
+		if (self.checkBoxBounds(i, j)) return self.board[i][j] >= sides.min();
+		else return true;
+	}
+
+	addAvailLine(i, j, i + 1, j);
+	addAvailLine(i, j, i, j + 1);
+	addAvailLine(i + 1, j, i + 1, j + 1);
+	addAvailLine(i, j + 1, i + 1, j + 1);
+	return arr;
 };
 
 
