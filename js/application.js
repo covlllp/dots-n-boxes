@@ -20,9 +20,9 @@ $(document).ready(function() {
 		// }
 
 
-		while (game.whoseTurn() == 'comp' && !game.isOld_GameEnd()) {
-			game.playComputerTurn();
-		}
+		// while (game.whoseTurn() == 'comp' && !game.isOld_GameEnd()) {
+		// 	game.playComputerTurn();
+		// }
 	});
 
 	$("#play-button").on("click", function() {
@@ -45,25 +45,38 @@ function Game () {
 	$(".line, .box").removeClass("comp-back");
 	$("#play-button").text("Restart Game");
 	this.updateScores();
+	// this.printSidesLeft();
 }
 
 
 // Board functions
 
 Game.prototype.playLine = function(lineId) {
-	$('#' + lineId).addClass(this.turn + '-back');
+	this.drawLine(lineId);
+	var self = this;
+	var count = 0;
 	// Should return # of boxes completed.
-	// this.actOnLine(lineId, function(i, j) {
-
-	// });
+	this.actOnLine(lineId, function(i, j) {
+		if (!--self.board[i][j]) {
+			self.drawBox(i, j);
+			count++;
+			if (self.turn == 'comp') {
+				self.board[i][j]--;
+				self.scores.comp++;
+			} else self.scores.player++;
+			self.updateScores();
+		}
+	});
+	if (!count) this.switchTurn();
 };
 
 
 Game.prototype.actOnLine = function(lineId, func) {
+	var self = this;
 	// Takes function and runs on blocks
 	// Function takes block i and j
 	function checkAndRun (i, j) {
-		if (this.checkBoxBounds(i, j))
+		if (self.checkBoxBounds(i, j))
 			func(i, j);	
 	}
 
@@ -93,6 +106,17 @@ Game.prototype.parseLineInd = function(lineId) {
 	return arr;
 };
 
+
+// Drawing functions
+
+Game.prototype.drawLine = function(lineId) {
+	$('#' + lineId).addClass(this.turn + '-back');
+};
+
+Game.prototype.drawBox = function(i, j) {
+	$('#b' + i + '-' + j).addClass(this.turn + '-back');
+};
+
 // Gameplay functions
 
 Game.prototype.whoseTurn = function() {
@@ -114,7 +138,7 @@ Game.prototype.updateScores = function() {
 
 Game.prototype.switchTurn = function() {
 	$("#" + this.turn + "-turn").toggleClass("hidden");
-	this.turn = (this.turn == player) ? 'comp' : 'player';
+	this.turn = (this.turn == 'player') ? 'comp' : 'player';
 	$("#" + this.turn + "-turn").toggleClass("hidden");
 };
 
@@ -146,6 +170,15 @@ Game.prototype.initAvailMoves = function() {
 	return arr;
 };
 
+
+// Testing functions
+Game.prototype.printSidesLeft = function() {
+	for (var i = 0; i < this.board.length; i++) {
+		for (var j = 0; j < this.board[i].length; j++) {
+			$("#b" + i + "-" + j).text(this.board[i][j]);
+		}
+	}
+};
 
 
 
