@@ -47,7 +47,7 @@
 						<form id="player-brain">
 							<input type="radio" name="brain" value="player" checked>Human<br>
 							<input type="radio" name="brain" value="random">Random<br>
-							<input type="radio" name="brain" value="MCTS">MCTS<br>
+							<input type="radio" name="brain" value="minimax">Minimax<br>
 							<input type="radio" name="brain" value="greedy">Greedy
 						</form>
 					</div>					
@@ -63,8 +63,8 @@
 					<div id="comp-option-div">
 						<form id="comp-brain">
 							<input type="radio" name="brain" value="player">Human<br>
-							<input type="radio" name="brain" value="random" checked>Random<br>
-							<input type="radio" name="brain" value="MCTS">MCTS<br>
+							<input type="radio" name="brain" value="random">Random<br>
+							<input type="radio" name="brain" value="minimax" checked>Minimax<br>
 							<input type="radio" name="brain" value="greedy">Greedy
 						</form>
 					</div>
@@ -104,5 +104,10 @@
 		<!-- Scripts for things -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="js/application.js"></script>
+		<script src="js/gameConstructor.js"></script>
+		<script src="js/computerFunctions.js"></script>
+		<script src="js/boardFunctions.js"></script>
+		<script src="js/gameplayFunctions.js"></script>
+		<script src="js/minimaxFunctions.js"></script>
 	</body>
 </html>
