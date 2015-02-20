@@ -17,6 +17,10 @@ Game.prototype.playLine = function(lineId) {
 	});
 	if (!count) this.switchTurn();
 	this.availMoves.splice(this.availMoves.indexOf(lineId), 1);
+
+	if (this.curNode.hasOwnProperty(lineId)) this.curNode = this.curNode[lineId];
+	else this.curNode =
+		new Node(lineId, this.curNode, this.availMoves, this.board, this.turn, this.scores.comp - this.scores.player);
 	// this.printSidesLeft();
 };
 
