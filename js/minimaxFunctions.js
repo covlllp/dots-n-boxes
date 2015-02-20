@@ -27,9 +27,8 @@ Game.prototype.runMinimax = function(curNode) {
 		});
 	}
 	var lineId = curNode.selectMove();
-	console.log('move is ', lineId);
-	console.log('node object: ', this.curNode);
 	this.playLine(lineId);
+	console.log('bye');
 };
 
 
@@ -50,7 +49,6 @@ Node.prototype.getBoardUtil = function(board) {
 		for (var j = 0; j < board[i].length; j++) {
 			if (board[i][j] == 0) {
 				util--;
-				console.log('in');
 			} else if (board[i][j] == -1) util++;
 		}
 	}
@@ -63,9 +61,9 @@ Node.prototype.analyzeChildren = function() {
 		this.value = (this.turn == 'comp') ? -Infinity : Infinity;
 
 	this.availMoves.forEach(function(lineId) {
+		console.log('hi');
 		var availMoves = self.availMoves.slice();
 		availMoves.splice(availMoves.indexOf(lineId), 1);
-		// if (availMoves.length == 0) debugger;
 		var board = MultiDepArrayClone(self.board);
 		var turn = (self.turn == 'player') ? 'comp' : 'player';
 		if (Game.prototype.playLineOnBoard(lineId, board, self.turn)) {
@@ -93,7 +91,9 @@ Node.prototype.bubbleUpTo = function(topNode) {
 			}
 		}
 	});
-	if (temp_val == this.value) return;
+	// if (this.value != 0) debugger;
+	if (temp_val == Infinity ||
+		temp_val == -Infinity) return;
 	else {
 		this.value = temp_val;
 		if (this != topNode) this.parent.bubbleUpTo(topNode);
